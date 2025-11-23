@@ -195,7 +195,7 @@ def insert(movie_dic):
     ### <--- GENRE_AVL ---> ###
 
     ### <--- TITLE_AVL ---> ###
-    AVL_title.put(movie_dic["title"], movie_dic)
+    AVL_title.put(movie_dic["title"], movie_dic["id"])
     ### <--- TITLE_AVL ---> ###
 
 
@@ -224,3 +224,4 @@ print(AVL_title.get("Joker"))
 #     print(i)
 
 #©Vardan Grigoryan
+
