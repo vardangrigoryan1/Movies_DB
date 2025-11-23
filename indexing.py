@@ -112,6 +112,18 @@ class AVLTreeMap(TreeMap):
 
 
     ### <----------------------------------------> ###
+    def entry_set(self): #key_set(self) -> Iterable: AND values(self) -> Iterable:
+
+        def in_order_trav(p):
+                if p is None or self._tree.is_external(p):
+                    return
+                yield from in_order_trav(self._tree.left(p))
+                yield p.get_element()
+                yield from in_order_trav(self._tree.right(p))
+        
+        return in_order_trav(self._tree.root())
+
+    
     def get_keys_with_prefix(self, prefix):
         results = []
 
@@ -125,10 +137,10 @@ class AVLTreeMap(TreeMap):
             
             in_order_trav(self._tree.left(p))
             key = p.get_element().get_key()
-            value = p.get_element().get_value()
+            value_i = p.get_element().get_value()
 
             if key.startswith(prefix):
-                results.append(value["id"])
+                results.append(value_i)
             elif not key.startswith(prefix):
                 return
                 #Optimization. Stop traversal once it has passed the prefix
@@ -142,11 +154,11 @@ class AVLTreeMap(TreeMap):
     ### <----------------------------------------> ###
     
     ### <----------------------------------------> ###
-    def _get_many_list(self, k): #(logn + m) **SOLUTION 1**
-        list_of_movies = self.get(k) #### discusion ####
-        if not list_of_movies:
-            return []
-        return [movie["id"] for movie in list_of_movies]
+    #def _get_many_list(self, k): #(logn + m) **SOLUTION 1** X
+    #    list_of_movies = self.get(k) #### discusion ####
+    #    if not list_of_movies:
+    #        return []
+    #    return [movie["id"] for movie in list_of_movies]
     ### <----------------------------------------> ###
             
 
@@ -163,11 +175,24 @@ def insert(movie_dic):
     existing_list = AVL_year.get(year)
 
     if existing_list is None:
-        AVL_year.put(year, [movie_dic])    #AVL_year.put(year, [movie_dic["id"]]) (logn) (Store only movie IDs instead of full movie dictionaries) **SOLUTION 2**
+        AVL_year.put(year, [movie_dic["id"]])    #AVL_year.put(year, [movie_dic["id"]]) (logn) (Store only movie IDs instead of full movie dictionaries) **SOLUTION 2** V
     else:
-        existing_list.append(movie_dic)    #existing_list.append(movie_dic["id"]) (logn) (Store only movie IDs instead of full movie dictionaries) **SOLUTION 2**
+        existing_list.append(movie_dic["id"])    #existing_list.append(movie_dic["id"]) (logn) (Store only movie IDs instead of full movie dictionaries) **SOLUTION 2** V
         ### AVL_year.put(year, existing_list) (no need for put) ###
     ### <--- YEAR_AVL ---> ###
+
+    ### <--- GENRE_AVL ---> ###
+    genres_list = movie_dic["genres"]
+    for genre in genres_list:
+
+        existing_list = AVL_genre.get(genre)
+
+        if existing_list is None:
+            AVL_genre.put(genre, [movie_dic["id"]])   #AVL_genre.put(genre, [movie_dic["id"]]) (logn) (Store only movie IDs instead of full movie dictionaries) **SOLUTION 2**
+        else:
+            existing_list.append(movie_dic["id"])     #existing_list.append(movie_dic["id"]) (logn) (Store only movie IDs instead of full movie dictionaries) **SOLUTION 2**
+            ### AVL_year.put(genre, existing_list) (no need for put) ###
+    ### <--- GENRE_AVL ---> ###
 
     ### <--- TITLE_AVL ---> ###
     AVL_title.put(movie_dic["title"], movie_dic)
@@ -175,15 +200,27 @@ def insert(movie_dic):
 
 
 
-AVL_year = AVLTreeMap()
 AVL_title = AVLTreeMap()
+AVL_year = AVLTreeMap()
+AVL_genre = AVLTreeMap()
 
 from STORAGE import movies_list_of_dic
 for movie_dic in movies_list_of_dic:
     insert(movie_dic)
 
 
-print(AVL_year._get_many_list(1996))
+#print(AVL_year._get_many_list(1996)) # **SOLUTION 1** X
+print(AVL_year.get(1996))             # **SOLUTION 2** V
+print(AVL_genre.get_keys_with_prefix("Dra"))
+print(AVL_genre.get("Drama"))
 print(AVL_title.get_keys_with_prefix("Jo"))
+print(AVL_title.get("Joker"))
+
+# for i in AVL_title.values():
+#     print(i)
+# for i in AVL_title.key_set():
+#     print(i)
+# for i in AVL_genre.key_set():
+#     print(i)
 
 #©Vardan Grigoryan
