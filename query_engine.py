@@ -92,5 +92,16 @@ class QueryEngine:
         self.indexer.save_AVL_pickle()
 
         return True
-    
+
+ 
+    def search_by_year_range(self, start_year, end_year):
+        entries = self.indexer.AVL_year.sub_map(start_year, end_year+1)
+        result = []
+        for entry in entries:
+            for movie_id in entry.get_value():
+                movie_record = self.by_id.get(movie_id)
+                if movie_record:
+                    result.append(movie_record)
+        return result
+
 #©Vardan Grigoryan
