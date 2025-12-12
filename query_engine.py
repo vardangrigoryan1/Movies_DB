@@ -67,14 +67,30 @@ class QueryEngine:
         update_next_unique = new_movie_key + 1
         self.storager.setter_next_key_to_insert(update_next_unique)
 
-        #2. Update the MAIN DIC - self.by_id = movie_dic = STORAGE_movie_dic
-        self.by_id[new_movie_key] = movie
-
-        #3. Update the AVL Indices O(log n * g)
+        #2. Update the AVL Indices O(log n * g)
         self.indexer.inserting_process(movie, new_movie_key)
+     
+        #3. Update the MAIN DIC - self.by_id = movie_dic = STORAGE_movie_dic
+        self.by_id[new_movie_key] = movie
 
         self.indexer.save_AVL_pickle()
 
         return new_movie_key
+
+
+    def delete_movie(self, movie_id):
+        movie = self.by_id.get(movie_id)
+        if not movie:
+            return False
+        
+        #1. Update the AVL Indices O(log n * g)
+        self.indexer.deleting_process(movie_id)
+
+        #2. Update the MAIN DIC - self.by_id = movie_dic = STORAGE_movie_dic
+        del self.by_id[movie_id]
+
+        self.indexer.save_AVL_pickle()
+
+        return True
     
 #©Vardan Grigoryan
