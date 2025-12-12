@@ -6,9 +6,11 @@ project/
 ├── data/  
 │&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├─── raw/  
 │&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└─── movies.csv  
-│&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└─── pickle/  
-│&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├─── records_dic.pkl  
-│&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└─── indices_avl.pkl  
+│&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├─── pickle/  
+│&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├─── records_dic.pkl  
+│&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└─── indices_avl.pkl  
+│&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└─── audit/  
+│&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└─── audit_log.json  
 │  
 ├── core/  
 │&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├─── storage.py  
