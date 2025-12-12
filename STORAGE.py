@@ -21,6 +21,20 @@ def to_number(val):
 def to_list(val):
     """Converting comma-separated string to list of strings"""
     return [item.strip() for item in val.split(",")] if val.strip() else []
+
+### <--------- KEY FUNCTIONALITY ---------> ###
+def initialize_next_key_to_insert(records_dic): 
+    """
+    Calculates the highest existing key (NEW UNIQUE KEY) in the movie dictionary and sets 
+    the next_key counter one higher. This operation is O(N), but is 
+    only performed once at startup. Will be used in self._next_key_to_insert (STORAGE_DATASET)
+    """
+    #Using max(keys) to ensure the highest number is found, even if
+    #earlier keys were deleted (ex. max of {0, 5, 10} is 10)
+    max_key = max(records_dic.keys())
+    next_key = max_key + 1
+    return next_key
+### <--------- KEY FUNCTIONALITY ---------> ###
 ### <--------- Helper Functions ---------> ###
 
 
@@ -29,6 +43,18 @@ class STORAGE_DATASET:
         self.csv_path = os.path.abspath(csv_path)
         self.pickle_path = os.path.abspath(pickle_path)
         self.records_dic = {}
+        ### <--------- KEY FUNCTIONALITY ---------> ###
+        self._next_key_to_insert = 0
+        ### <--------- KEY FUNCTIONALITY ---------> ###
+    
+    ### <--------- KEY FUNCTIONALITY ---------> ###
+    def getter_next_key_to_insert(self):
+        return self._next_key_to_insert
+    
+    def setter_next_key_to_insert(self, increment):
+        self._next_key_to_insert = increment
+    ### <--------- KEY FUNCTIONALITY ---------> ###
+    
 
     ### <--------- Main Conversion Function ---------> ###
     def load_movie_csv(self):
@@ -88,12 +114,16 @@ class STORAGE_DATASET:
         else:  #load from CSV if pickle doesn't exist
             self.load_movie_csv()
             self.save_DATASET_pickle()
+        ### <--------- KEY FUNCTIONALITY ---------> ###
+        find_max_key = initialize_next_key_to_insert(self.records_dic)
+        self.setter_next_key_to_insert(find_max_key)
+        ### <--------- KEY FUNCTIONALITY ---------> ###
         return self.records_dic  #return the records directly (no need to load again)
     ### <--------- UNIFIED Loader ---------> ###
 
 
 
-storage = STORAGE_DATASET()
-STORAGE_movie_dic = storage.load_DATASET_final() #Load dataset ONCE at the start
+storager_obj = STORAGE_DATASET()
+STORAGE_movie_dic = storager_obj.load_DATASET_final() #Load dataset ONCE at the start
 
 #©Vardan Grigoryan
