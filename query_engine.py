@@ -1,6 +1,7 @@
 from ds_collection import *
 from indexing import INDEX_searching_engine #*
 from STORAGE import STORAGE_movie_dic, storager_obj #*
+from audit_logger import AuditLogger
 
  ### <--------- QUERY Engine ---------> ###
 class QueryEngine:
@@ -16,6 +17,8 @@ class QueryEngine:
 
         self.indexer = indexer
         self.storager = storager_obj
+
+        self.logger = AuditLogger()
 
 
     ### <--------- Helper Function for Lists (GENRE, YEAR) ---------> ###
@@ -76,6 +79,10 @@ class QueryEngine:
 
         self.indexer.save_AVL_pickle()
 
+        #AL* AUDIT LOG
+        movie_title = movie.get("title", f"ID {new_movie_key}")
+        self.logger.log_insertion(new_movie_key, movie_title)
+
         return new_movie_key
 
 
@@ -83,6 +90,9 @@ class QueryEngine:
         movie = self.by_id.get(movie_id)
         if not movie:
             return False
+
+        #AL* AUDIT LOG
+        movie_title = movie.get("title", f"ID {movie_id}") #capturing title before deletion
         
         #1. Update the AVL Indices O(log n * g)
         self.indexer.deleting_process(movie_id)
@@ -91,6 +101,9 @@ class QueryEngine:
         del self.by_id[movie_id]
 
         self.indexer.save_AVL_pickle()
+
+        #AL* AUDIT LOG
+        self.logger.log_deletion(movie_id, movie_title)
 
         return True
 
@@ -108,9 +121,24 @@ def modify_movie(self, movie_id, updates: dict):
         old_movie = self.by_id[movie_id].copy()
         new_movie = old_movie.copy()
 
-        # Update fields
+        ### <--------- AUDIT LOG ---------> ###
+        #AL* AUDIT LOG
+        changes_list = [] #list to capture changes for the audit log
+
+        #update fields and track changes
         for key, value in updates.items():
-            new_movie[key] = value
+            if old_movie.get(key) != value: 
+                changes_list.append({
+                    "field": key,
+                    "old_value": old_movie.get(key),
+                    "new_value": value
+                })
+                new_movie[key] = value
+    
+        #If no effective changes were made, exit early.
+        if not changes_list:
+            return True
+        ### <--------- AUDIT LOG ---------> ###
 
         #checking if any indexed fields changed
         indexed_fields = ["title", "release_date", "genres"]
@@ -125,6 +153,10 @@ def modify_movie(self, movie_id, updates: dict):
  
         #2. Update the MAIN DIC - self.by_id = movie_dic = STORAGE_movie_dic
         self.by_id[movie_id] = new_movie
+
+        #AL* AUDIT LOG
+        movie_title = new_movie.get("title", f"ID {movie_id}")
+        self.logger.log_modification(movie_id, movie_title, changes_list)
 
         return True
     ### <--------- INSERT, REMOVE, MODIFY - movie ---------> ###
@@ -158,3 +190,4 @@ def modify_movie(self, movie_id, updates: dict):
         return result
 
 #©Vardan Grigoryan
+
