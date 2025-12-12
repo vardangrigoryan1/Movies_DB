@@ -188,6 +188,44 @@ class MovieIndex:
             self.insert_overall()
             self.save_AVL_pickle()
 
+    ### <--------- DELETE_FROM_AVL ---------> ###
+    def deleting_process(self, movie_id):
+        ### <--------- Getting that Dic ---------> ###
+        movie_dic = self.dataset[movie_id]
+        ### <--------- Getting that Dic ---------> ###
+
+        ### <--------- YEAR_AVL ---------> ###
+        date = movie_dic.get("release_date")   #date = movie_dic["release_date"]
+        if not date or len(date) < 4:
+            return
+        year = int(date[:4])
+
+        existing_list = self.AVL_year.get(year)
+
+        if existing_list and movie_id in existing_list:
+            existing_list.remove(movie_id)
+            if len(existing_list) == 0:         #If the list is now empty, delete the whole year node O(log N)
+                self.AVL_year.remove(year)
+        ### <--------- YEAR_AVL ---------> ###
+
+        ### <--------- GENRE_AVL ---------> ###
+        genres_list = movie_dic.get("genres")   #genres_list = movie_dic["genres"]
+        for genre in genres_list:
+
+            existing_list = self.AVL_genre.get(genre)
+
+            if existing_list and movie_id in existing_list:
+                existing_list.remove(movie_id)
+                if len(existing_list) == 0:      #If the list is now empty, delete the whole year node O(log N)
+                    self.AVL_genre.remove(genre)
+        ### <--------- GENRE_AVL ---------> ###
+
+        ### <--------- TITLE_AVL ---------> ###
+        self.AVL_title.remove(movie_dic.get("title"))
+        ### <--------- TITLE_AVL ---------> ###
+    ### <--------- DELETE_FROM_AVL ---------> ###
+
+    
     ### <--------- INSERT_TO_AVL ---------> ###
     def inserting_process(self, movie_dic, movie_id):
         ### <--------- YEAR_AVL ---------> ###
