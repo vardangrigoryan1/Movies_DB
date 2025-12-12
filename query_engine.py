@@ -140,5 +140,21 @@ def modify_movie(self, movie_id, updates: dict):
                     result.append(movie_record)
         return result
 
-#©Vardan Grigoryan
 
+    def range_query(self, field, min_val, max_val):
+        """
+        Generic range query for numeric fields. O(N)
+        """
+        result = []
+
+        for movie in self.by_id.values():
+            if field in movie:
+                val = movie[field]
+
+                if isinstance(val, (int, float)): #the value is numeric before comparison!
+                    if min_val <= val <= max_val:
+                        result.append(movie)
+
+        return result
+
+#©Vardan Grigoryan
