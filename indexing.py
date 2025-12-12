@@ -1,4 +1,7 @@
 from ds_collection import *
+from STORAGE import STORAGE_movie_dic #*
+import pickle
+import os
 
 class AVLTreeMap(TreeMap):
     """A sorted map implementation using an AVL-balanced binary search tree."""
@@ -167,54 +170,101 @@ class AVLTreeMap(TreeMap):
 ### <----------------------------------------> ###
 
 
-def insert(movie_dic):
-    ### <--- YEAR_AVL ---> ###
-    date = movie_dic["release_date"]
-    year = int(date[:4])
+class MovieIndex:
+    def __init__(self, pickle_path="project/data/pickle/indices_avl.pkl", dataset=None):
+        self.pickle_path = os.path.abspath(pickle_path)
 
-    existing_list = AVL_year.get(year)
+        if dataset is None:
+            dataset = STORAGE_movie_dic
+        self.dataset = dataset
 
-    if existing_list is None:
-        AVL_year.put(year, [movie_dic["id"]])    #AVL_year.put(year, [movie_dic["id"]]) (logn) (Store only movie IDs instead of full movie dictionaries) **SOLUTION 2** V
-    else:
-        existing_list.append(movie_dic["id"])    #existing_list.append(movie_dic["id"]) (logn) (Store only movie IDs instead of full movie dictionaries) **SOLUTION 2** V
-        ### AVL_year.put(year, existing_list) (no need for put) ###
-    ### <--- YEAR_AVL ---> ###
+        if self.load_AVL_final(): #True
+            print("load exav")
+        else: #False
+            self.AVL_title = AVLTreeMap()
+            self.AVL_year = AVLTreeMap()
+            self.AVL_genre = AVLTreeMap()
 
-    ### <--- GENRE_AVL ---> ###
-    genres_list = movie_dic["genres"]
-    for genre in genres_list:
+            self.insert_overall()
+            self.save_AVL_pickle()
 
-        existing_list = AVL_genre.get(genre)
+    ### <--------- INSERT_TO_AVL ---------> ###
+    def inserting_process(self, movie_dic, movie_id):
+        ### <--------- YEAR_AVL ---------> ###
+        date = movie_dic.get("release_date")    #date = movie_dic["release_date"]
+        if not date or len(date) < 4:
+            return
+        year = int(date[:4])
+
+        existing_list = self.AVL_year.get(year)
 
         if existing_list is None:
-            AVL_genre.put(genre, [movie_dic["id"]])   #AVL_genre.put(genre, [movie_dic["id"]]) (logn) (Store only movie IDs instead of full movie dictionaries) **SOLUTION 2**
+            self.AVL_year.put(year, [movie_id])
         else:
-            existing_list.append(movie_dic["id"])     #existing_list.append(movie_dic["id"]) (logn) (Store only movie IDs instead of full movie dictionaries) **SOLUTION 2**
-            ### AVL_year.put(genre, existing_list) (no need for put) ###
-    ### <--- GENRE_AVL ---> ###
+            existing_list.append(movie_id)
+        ### <--------- YEAR_AVL ---------> ###
 
-    ### <--- TITLE_AVL ---> ###
-    AVL_title.put(movie_dic["title"], movie_dic["id"])
-    ### <--- TITLE_AVL ---> ###
+        ### <--------- GENRE_AVL ---------> ###
+        genres_list = movie_dic.get("genres")   #genres_list = movie_dic["genres"]
+        for genre in genres_list:
+
+            existing_list = self.AVL_genre.get(genre)
+
+            if existing_list is None:
+                self.AVL_genre.put(genre, [movie_id])
+            else:
+                existing_list.append(movie_id)
+        ### <--------- GENRE_AVL ---------> ###
+
+        ### <--------- TITLE_AVL ---------> ###
+        self.AVL_title.put(movie_dic.get("title"), movie_id)  #AVL_title.put(movie_dic["title"], movie_id)
+        ### <--------- TITLE_AVL ---------> ###
+
+
+    def insert_overall(self):
+        for movie_id, movie_dic in self.dataset.items():
+            self.inserting_process(movie_dic, movie_id)
+    ### <--------- INSERT_TO_AVL ---------> ###
+
+
+    ### <--------- PICKLE Functions ---------> ###
+    def save_AVL_pickle(self):
+        """Pickle the AVL tree indices"""
+        with open(self.pickle_path, "wb") as f:
+            pickle.dump({
+                "AVL_title": self.AVL_title,
+                "AVL_year": self.AVL_year,
+                "AVL_genre": self.AVL_genre
+            }, f)
+        
+    def load_AVL_pickle(self):
+        with open(self.pickle_path, "rb") as f:
+            data = pickle.load(f)
+            self.AVL_title = data["AVL_title"]
+            self.AVL_year = data["AVL_year"]
+            self.AVL_genre = data["AVL_genre"]
+    ### <--------- PICKLE Functions ---------> ###
+
+    ### <--------- UNIFIED Loader ---------> ###
+    def load_AVL_final(self):
+        if os.path.exists(self.pickle_path):
+            self.load_AVL_pickle() # Load from pickle if it exists
+            return True
+        else:  # False ==> create new AVLs
+            return False
+    ### <--------- UNIFIED Loader ---------> ###
 
 
 
-AVL_title = AVLTreeMap()
-AVL_year = AVLTreeMap()
-AVL_genre = AVLTreeMap()
+INDEX_searching_engine = MovieIndex()
 
-from STORAGE import movies_list_of_dic
-for movie_dic in movies_list_of_dic:
-    insert(movie_dic)
+#print(INDEX_searching_engine.AVL_year.get(2000))
 
-
-#print(AVL_year._get_many_list(1996)) # **SOLUTION 1** X
-print(AVL_year.get(1996))             # **SOLUTION 2** V
-print(AVL_genre.get_keys_with_prefix("Dra"))
-print(AVL_genre.get("Drama"))
-print(AVL_title.get_keys_with_prefix("Jo"))
-print(AVL_title.get("Joker"))
+# print(INDEX_searching_engine.AVL_year.get(1996))
+# print(INDEX_searching_engine.AVL_genre.get_keys_with_prefix("Dra"))
+# print(INDEX_searching_engine.AVL_genre.get("Drama"))
+# print(INDEX_searching_engine.AVL_title.get_keys_with_prefix("Jo"))
+# print(INDEX_searching_engine.AVL_title.get("Joker"))
 
 # for i in AVL_title.values():
 #     print(i)
@@ -224,4 +274,3 @@ print(AVL_title.get("Joker"))
 #     print(i)
 
 #©Vardan Grigoryan
-
