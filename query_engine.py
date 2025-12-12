@@ -53,6 +53,7 @@ class QueryEngine:
     ### <--------- SEARCHING ---------> ###
 
 
+    ### <--------- INSERT, REMOVE, MODIFY - movie ---------> ###
     def insert_movie(self, movie):
         """
         Insert a new movie into storage and all indexes.
@@ -93,7 +94,42 @@ class QueryEngine:
 
         return True
 
+
+def modify_movie(self, movie_id, updates: dict):
+        """
+        Modify an existing movie's fields.
+        - movie_id: int, the movie key in storage
+        - updates: dict, fields to update with new values
+        Returns True if modification was successful, False if movie_id doesn't exist.
+        """
+        if movie_id not in self.by_id:
+            return False
+
+        old_movie = self.by_id[movie_id].copy()
+        new_movie = old_movie.copy()
+
+        # Update fields
+        for key, value in updates.items():
+            new_movie[key] = value
+
+        #checking if any indexed fields changed
+        indexed_fields = ["title", "release_date", "genres"]
+        if any(field in updates for field in indexed_fields):
+            #removing old movie from AVL indices
+            self.indexer.deleting_process(movie_id)
+            #inserting updated movie into AVL indices
+            self.indexer.inserting_process(new_movie, movie_id)
+
+        #1. Update the AVL Indices O(log n * g)
+        self.indexer.save_AVL_pickle()
  
+        #2. Update the MAIN DIC - self.by_id = movie_dic = STORAGE_movie_dic
+        self.by_id[movie_id] = new_movie
+
+        return True
+    ### <--------- INSERT, REMOVE, MODIFY - movie ---------> ###
+
+
     def search_by_year_range(self, start_year, end_year):
         entries = self.indexer.AVL_year.sub_map(start_year, end_year+1)
         result = []
@@ -105,3 +141,4 @@ class QueryEngine:
         return result
 
 #©Vardan Grigoryan
+
